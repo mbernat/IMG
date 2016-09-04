@@ -90,6 +90,8 @@ class MatchSpec extends FlatSpec with Matchers {
     lastMatch.pointsTotal2 should be (29)
     lastMatch.whoScored should be (Team1())
     lastMatch.pointsScored should be (2)
+
+    history.queryAll.length should be (28)
   }
 
   "0-point scores" should "be invalid" in {
@@ -110,5 +112,7 @@ class MatchSpec extends FlatSpec with Matchers {
     lastMatch.pointsTotal2 should be (29)
     lastMatch.whoScored should be (Team1())
     lastMatch.pointsScored should be (2)
+
+    history.queryAll.length should be (27)
   }
 }
