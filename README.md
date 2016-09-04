@@ -4,7 +4,7 @@ matches
 This is a simple library for processing of match events.
 Its core resides in `matches.MatchHistory` with the following signature.
 
-* `add(m: MatchEvent): Option[ConsistencyError]`
+* `add(m: MatchEvent): Boolean`
 * `queryLast: Option[MatchEvent]`
 * `queryMultiple(n: Int): List[MatchEvent]`
 * `queryAll: List[MatchEvent]`

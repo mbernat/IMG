@@ -30,8 +30,8 @@ class MatchHistory() {
 
     if (m.time < prevEvent.time)
       // This lookup is linear in the length of the history,
-      // so if we expect many errors in the input data
-      // a representation with better lookup asymptotics would be in order.
+      // so if we expect many errors of this kind in the input data
+      // a history representation with better asymptotics would be in order.
       return history.find(x => MatchHelper.timelessEqual(x, m)) match {
         case Some(oldEvent) => Some(OldEventError(oldEvent))
         case None => Some(UnknownError())
@@ -56,22 +56,22 @@ class MatchHistory() {
       Some(UnknownError())
   }
 
-  // Add a new event @m@ to match history.
+  // Add a new event @m@ to match history and return `true`, if possible.
   // If the event is inconsistent with the history we try a number
-  // of heuristics to fix the situation. In case it does not work
-  // we report an error.
-  def add(m: MatchEvent): Option[ConsistencyError] =
+  // of heuristics to fix the situation. In case it does not help
+  // we return `false`.
+  def add(m: MatchEvent): Boolean =
     getConsistencyError(m) match {
       // No error, so simply prepend the event to history.
       case None => {
         history = m :: history
-        None
+        true
       }
 
       // There was a consistency error but in some cases it might be fixable.
       case Some(r) => r match {
         // If the new event is a duplicate we need no further handling.
-        case DuplicateError() => Some(DuplicateError())
+        case DuplicateError() => false
 
         // The new event is already present in the history, possibly
         // with an incorrect timestamp (that we guessed previously
@@ -79,7 +79,7 @@ class MatchHistory() {
         case OldEventError(oldMatch) => {
           history = history.map(y =>
             if (MatchHelper.timelessEqual(y, m)) m else y)
-          None
+          true
         }
 
         // We are probably missing an event in the history, so try
@@ -87,12 +87,12 @@ class MatchHistory() {
         case MissingEventError() =>
           MatchHelper.intermediate(m, history(0)) match {
             // Intermediate event could not be constructed, so report an error.
-            case None => Some(UnknownError())
+            case None => false
             // Intermediate event has been constructed, so add both it
             // and the original event to the history.
             case Some(inter) => {
               history = m :: inter :: history
-              None
+              true
             }
           }
 
@@ -103,7 +103,7 @@ class MatchHistory() {
           add(m)
         }
 
-        case UnknownError() => Some(UnknownError())
+        case UnknownError() => false
       }
     }
 
